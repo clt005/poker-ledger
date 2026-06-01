@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clayton's Bookkeeping</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#100e0b; --panel:#1a1612; --panel2:#221d17; --line:#332b22;
+  --ink:#ece4d6; --mut:#9a8e7c; --faint:#6b6051;
+  --gold:#e0b75e; --gold-dim:#a8842f; --green:#6fbf95; --red:#e0796c;
+  --felt:#27483b; --shadow:0 20px 50px -20px rgba(0,0,0,.7);
+  --mono:'Space Mono',ui-monospace,monospace; --disp:'Fraunces',Georgia,serif; --body:'Hanken Grotesk',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased}
+body{background-image:radial-gradient(1200px 600px at 80% -10%, rgba(224,183,94,.07), transparent 60%),radial-gradient(900px 500px at -10% 110%, rgba(39,72,59,.18), transparent 55%);min-height:100vh}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:980px;margin:0 auto;padding:32px 20px 80px}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;border-bottom:1px solid var(--line);padding-bottom:22px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.suit{font-family:var(--disp);font-style:italic;color:var(--gold);letter-spacing:.5px;font-size:13px;text-transform:uppercase;opacity:.85}
+h1{font-family:var(--disp);font-weight:600;font-size:clamp(30px,5vw,46px);line-height:.98;letter-spacing:-.5px}
+h1 em{font-style:italic;color:var(--gold)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:4px}
+.weekpick{display:flex;align-items:center;gap:8px}
+select,button,input,textarea{font-family:inherit;color:var(--ink)}
+select{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;cursor:pointer}
+.tabs{display:flex;gap:4px;margin:26px 0 22px;flex-wrap:wrap;background:var(--panel);padding:5px;border-radius:14px;border:1px solid var(--line);width:fit-content}
+.tab{background:none;border:none;color:var(--mut);padding:9px 15px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:.18s;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab.on{background:var(--panel2);color:var(--gold);box-shadow:inset 0 0 0 1px var(--line)}
+.card{background:linear-gradient(180deg,var(--panel),#16120e);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:var(--shadow);margin-bottom:20px}
+.card h2{font-family:var(--disp);font-weight:600;font-size:22px;margin-bottom:2px}
+.card h2 .it{font-style:italic;color:var(--gold)}
+.cap{color:var(--faint);font-size:12px;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:16px}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-top:6px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:15px 16px}
+.stat .k{color:var(--mut);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px}
+.stat .v{font-family:var(--mono);font-size:23px;font-weight:700;margin-top:7px;line-height:1}
+.stat .vsub{color:var(--faint);font-size:11px;margin-top:5px;font-family:var(--body)}
+.num{font-family:var(--mono)}
+.pos{color:var(--green)} .neg{color:var(--red)} .zero{color:var(--mut)}
+.flag{display:flex;align-items:center;gap:8px;background:rgba(224,121,108,.13);color:var(--red);border:1px solid rgba(224,121,108,.3);padding:9px 13px;border-radius:10px;font-size:12.5px;margin-top:14px}
+.flag.ok{background:rgba(111,191,149,.12);color:var(--green);border-color:rgba(111,191,149,.3)}
+.flag.info{background:rgba(224,183,94,.1);color:var(--gold);border-color:rgba(224,183,94,.28)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:right;color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.7px;font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none}
+th:first-child,td:first-child{text-align:left}
+th.sortable:hover{color:var(--gold)}
+td{padding:11px 10px;border-bottom:1px solid rgba(51,43,34,.5);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+.pname{font-weight:600;display:flex;align-items:center;gap:8px}
+.alias{font-size:11px;color:var(--faint);font-weight:400}
+.dot{width:7px;height:7px;border-radius:50%;flex:none}
+.bar{position:relative;height:7px;background:var(--panel2);border-radius:4px;overflow:hidden;min-width:60px}
+.bar i{position:absolute;top:0;bottom:0;border-radius:4px}
+.settle-row{display:flex;align-items:center;gap:13px;padding:14px 6px;border-bottom:1px solid rgba(51,43,34,.5);font-size:15px;transition:.18s}
+.settle-row:last-child{border-bottom:none}
+.settle-row.paid{opacity:.5}
+.settle-row.paid .who{text-decoration:line-through}
+.settle-row .from{font-weight:600;color:var(--red)}
+.settle-row .to{font-weight:600;color:var(--green)}
+.settle-row .arr{color:var(--faint)}
+.settle-row .amt{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:16px;color:var(--gold)}
+.chk{appearance:none;-webkit-appearance:none;width:22px;height:22px;border:2px solid var(--gold-dim);border-radius:7px;cursor:pointer;flex:none;position:relative;transition:.15s;background:var(--panel2)}
+.chk:hover{border-color:var(--gold)}
+.chk:checked{background:var(--green);border-color:var(--green)}
+.chk:checked::after{content:"";position:absolute;left:6px;top:2px;width:6px;height:11px;border:solid #10130f;border-width:0 3px 3px 0;transform:rotate(45deg)}
+.prog{height:8px;background:var(--panel2);border-radius:5px;overflow:hidden;margin:6px 0 4px}
+.prog i{display:block;height:100%;background:var(--green);border-radius:5px;transition:.3s}
+.btn{background:var(--gold);color:#1a1206;border:none;border-radius:10px;padding:11px 18px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--mut);border:1px solid var(--line)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--gold-dim)}
+.btn.sm{padding:7px 12px;font-size:12.5px;border-radius:9px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+textarea{width:100%;min-height:150px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;font-family:var(--mono);font-size:12.5px;line-height:1.5;resize:vertical;color:var(--ink)}
+input[type=text],input[type=date]{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
+label.fld{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+.file-item{border:1px solid var(--line);border-radius:13px;margin-bottom:10px;overflow:hidden;background:var(--panel2)}
+.file-head{display:flex;align-items:center;gap:12px;padding:14px 16px;flex-wrap:wrap}
+.file-head .gt{font-weight:600}
+.file-head .gd{color:var(--faint);font-size:12.5px}
+.fn{font-family:var(--mono);font-size:12px;color:var(--gold);background:rgba(224,183,94,.08);padding:3px 8px;border-radius:7px}
+.file-body{padding:0 16px 16px;display:none}
+.file-body.open{display:block}
+pre{background:#0c0a08;border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--mut);max-height:340px}
+.empty{text-align:center;color:var(--faint);padding:50px 20px}
+.empty .big{font-family:var(--disp);font-style:italic;font-size:22px;color:var(--mut);margin-bottom:8px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gold);color:#1a1206;padding:12px 22px;border-radius:12px;font-weight:700;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hint{color:var(--faint);font-size:12.5px;line-height:1.7;margin-top:10px}
+.spark{display:flex;align-items:flex-end;gap:2px;height:26px}
+.spark span{width:5px;border-radius:1px;flex:none}
+.guide h3{font-family:var(--disp);font-size:18px;margin:22px 0 6px;color:var(--ink)}
+.guide h3:first-child{margin-top:4px}
+.guide p{color:var(--mut);font-size:14px;line-height:1.7;margin-bottom:8px}
+.guide b{color:var(--ink)}
+.guide code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);padding:2px 6px;border-radius:6px;color:var(--gold)}
+.guide ol,.guide ul{color:var(--mut);font-size:14px;line-height:1.8;padding-left:22px;margin-bottom:8px}
+.navtile{display:flex;gap:12px;align-items:flex-start;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);margin-bottom:9px;cursor:pointer;transition:.15s}
+.navtile:hover{border-color:var(--gold-dim)}
+.navtile .ic{font-size:20px;line-height:1}
+.navtile .t{font-weight:600;color:var(--ink)}
+.navtile .d{color:var(--mut);font-size:13px;margin-top:2px;line-height:1.5}
+@media(max-width:560px){.wrap{padding:20px 14px 60px}.card{padding:18px}.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="suit">&#9824; &#9829;&nbsp; PokerNow Games &nbsp;&#9827; &#9830;</span>
+      <h1>Clayton's <em>Bookkeeping</em></h1>
+      <div style="color:var(--mut);font-size:13px;margin-top:2px;letter-spacing:.3px">The PokerNow Games Ledger</div>
+      <div class="sub" id="sub">Loading ledgers&hellip;</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+      <div style="text-align:right">
+        <div style="font-weight:700;font-size:15px;color:var(--ink)">Clayton Tan</div>
+        <div style="font-size:12.5px;color:var(--mut);margin-top:3px">
+          Clayton Tan &nbsp;&#183;&nbsp; WhatsApp &amp; Zelle <span style="font-family:var(--mono);font-size:12px;color:var(--gold)">619-317-4437</span>
+        </div>
+      </div>
+      <div class="weekpick">
+        <span style="color:var(--mut);font-size:13px">Week of</span>
+        <select id="weekSel"></select>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="settle">Settlement</button>
+    <button class="tab" data-tab="players">Players</button>
+    <button class="tab" data-tab="games">Game log</button>
+    <button class="tab" data-tab="life">Lifetime</button>
+    <button class="tab" data-tab="files">Files &amp; audit</button>
+    <button class="tab" data-tab="add">Add a game</button>
+    <button class="tab" data-tab="guide">Guide</button>
+  </div>
+
+  <div id="view"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const FB = {"currency":"$","settleHub":"Clayton","players":{"MJhBZs7fJF":"Ethan","mQB12J5va_":"Halim","blyyg6q3R-":"Halim","0oxsPzcrIa":"Peng","RLhCxDL19I":"Peng","wihuTZi7G-":"Peng","XO-P6ChLBL":"Reno","M27O7piJNR":"Jon","S50hTx3f4W":"Jon","jDaq6q7HFV":"Clayton","3aDmRHzcSY":"Ethan","d5GnHPpzmd":"Bas","kdKRyNDxHl":"Frey","oEjeIX4iN0":"Darren","15Yb4mRYvF":"Sandro","O-3L4966Ji":"Jovi","-534c8ICbF":"Brayden","DYXLwRPWuA":"Bubul","K85f7jjyu5":"Marco","MkDWPpf-PK":"Winston"},"settlements":[{"id":"2026-W22","week":"2026-W22","date":"2026-05-31","label":"Last week — final settlement","paid":true,"note":"This is last week's settlement only. The May 31 game wasn't part of it — it's rolled into this week's settlement instead.","groups":[{"title":"LA + Other side — everyone pays Brayden","hub":"Brayden","tx":[{"from":"Halim","to":"Brayden","amount":3886},{"from":"Jovan","to":"Brayden","amount":375},{"from":"Winston","to":"Brayden","amount":29},{"from":"Marco","to":"Brayden","amount":325},{"from":"Frey","to":"Brayden","amount":1636},{"from":"Peng","to":"Brayden","amount":50},{"from":"James","to":"Brayden","amount":8},{"from":"Bas","to":"Brayden","amount":446},{"from":"Brayden","to":"Jovi","amount":3748.5},{"from":"Brayden","to":"Reno","amount":650.88},{"from":"Brayden","to":"Darren","amount":10},{"from":"Brayden","to":"Kim","amount":347},{"from":"Brayden","to":"Bubul","amount":444}]},{"title":"SD side — everyone pays Clayton","hub":"Clayton","tx":[{"from":"Sandro","to":"Clayton","amount":1361.66},{"from":"Ethan","to":"Clayton","amount":211.92},{"from":"Jon","to":"Clayton","amount":105},{"from":"Raynard","to":"Clayton","amount":220},{"from":"RJ","to":"Clayton","amount":80},{"from":"Sammy","to":"Clayton","amount":13},{"from":"Clayton","to":"Matthew","amount":470},{"from":"Clayton","to":"Calvin","amount":30},{"from":"Clayton","to":"Brayden","amount":283.38}]}]}],"ledgers":[{"file":"2026-06-01.csv","label":"Monday, Jun 1","date":"2026-06-01","csv":"player_nickname,player_id,session_start_at,session_end_at,buy_in,buy_out,stack,net\n\"BANDITBAIK\",MJhBZs7fJF,2026-06-01T12:11:31.213Z,2026-06-01T12:15:19.768Z,6,0,0,-6\n\"BANDITBAIK\",MJhBZs7fJF,2026-06-01T12:09:37.183Z,2026-06-01T12:10:12.106Z,36,36,0,0\n\"Clayton\",jDaq6q7HFV,2026-06-01T12:04:05.177Z,2026-06-01T12:05:43.669Z,44,0,0,-44\n\"jon\",S50hTx3f4W,2026-06-01T11:59:28.877Z,2026-06-01T12:24:34.729Z,40,61,0,21\n\"jon\",S50hTx3f4W,2026-06-01T11:53:49.626Z,2026-06-01T11:57:48.691Z,20,0,0,-20\n\"Jovi\",O-3L4966Ji,2026-06-01T11:20:01.359Z,2026-06-01T12:06:45.147Z,50,171,0,121\n\"Nicc\",mQB12J5va_,2026-06-01T10:55:23.198Z,,500,300,242,42\n\"0opsy-pussy\",XO-P6ChLBL,2026-06-01T10:18:16.214Z,2026-06-01T10:36:53.075Z,50,0,0,-50\n\"jonny\",M27O7piJNR,2026-06-01T10:18:16.211Z,2026-06-01T10:36:53.070Z,85,228,0,143\n\"Jovi\",O-3L4966Ji,2026-06-01T09:10:44.282Z,2026-06-01T11:17:15.259Z,150,350,0,200\n\"Bubul\",DYXLwRPWuA,2026-06-01T09:10:44.285Z,2026-06-01T10:16:54.710Z,200,0,0,-200\n\"0opsy-pussy\",XO-P6ChLBL,2026-06-01T09:04:40.986Z,2026-06-01T09:07:18.392Z,50,0,0,-50\n\"Clayton\",jDaq6q7HFV,2026-06-01T09:00:08.525Z,2026-06-01T12:03:10.520Z,627,969,0,342\n\"BANDITBAIK\",MJhBZs7fJF,2026-06-01T08:58:39.569Z,2026-06-01T12:06:45.143Z,1300,1596,0,296\n\"Marco\",K85f7jjyu5,2026-06-01T08:57:24.008Z,2026-06-01T12:06:45.136Z,600,148,0,-452\n\"nico\",mQB12J5va_,2026-06-01T08:50:59.124Z,2026-06-01T10:42:59.328Z,395,0,0,-395\n\"Jovi\",O-3L4966Ji,2026-06-01T08:37:48.980Z,2026-06-01T09:07:18.387Z,60,0,0,-60\n\"Bokong\",oEjeIX4iN0,2026-06-01T08:36:05.392Z,2026-06-01T10:16:54.705Z,20,60,0,40\n\"Bokong\",oEjeIX4iN0,2026-06-01T08:29:13.289Z,2026-06-01T08:34:28.999Z,20,0,0,-20\n\"Jovi\",O-3L4966Ji,2026-06-01T08:29:13.286Z,2026-06-01T08:36:05.390Z,40,0,0,-40\n\"Clayton\",jDaq6q7HFV,2026-06-01T08:15:18.512Z,2026-06-01T08:57:24.004Z,115,134,0,19\n\"Clayton\",jDaq6q7HFV,2026-06-01T08:10:03.789Z,2026-06-01T08:12:15.494Z,200,283,0,83\n\"Bokong\",oEjeIX4iN0,2026-06-01T08:08:31.679Z,2026-06-01T08:26:13.557Z,20,0,0,-20\n\"nico\",mQB12J5va_,2026-06-01T08:08:31.677Z,2026-06-01T08:49:06.464Z,250,0,0,-250\n\"Winston\",MkDWPpf-PK,2026-06-01T08:04:07.122Z,2026-06-01T10:16:54.700Z,50,100,0,50\n\"0opsy-pussy\",XO-P6ChLBL,2026-06-01T07:56:38.165Z,2026-06-01T09:03:21.161Z,150,0,0,-150\n\"BANDITBAIK\",MJhBZs7fJF,2026-06-01T07:56:38.162Z,2026-06-01T08:55:33.691Z,250,300,0,50\n\"arpeggi\",15Yb4mRYvF,2026-06-01T07:56:38.159Z,2026-06-01T12:23:52.679Z,370,370,0,0\n\"jonny\",M27O7piJNR,2026-06-01T07:56:38.169Z,2026-06-01T08:58:39.567Z,110,145,0,35\n\"dragonpeng\",0oxsPzcrIa,2026-06-01T07:56:38.155Z,,500,750,65,315\n\"Dragonpeng\",RLhCxDL19I,,2026-06-01T07:37:17.191Z,50,50,0,0\n"},{"file":"2026-05-31.csv","label":"Sunday, May 31","date":"2026-05-31","week":"2026-W23","csv":"player_nickname,player_id,session_start_at,session_end_at,buy_in,buy_out,stack,net\n\"realclaytontan\",3aDmRHzcSY,2026-05-31T13:43:43.509Z,,100,,165,65\n\"realclaytontan\",3aDmRHzcSY,2026-05-31T13:37:44.519Z,2026-05-31T13:43:29.468Z,50,0,0,-50\n\"Baslucky88\",d5GnHPpzmd,2026-05-31T13:14:47.110Z,2026-05-31T13:33:06.671Z,100,204,0,104\n\"toti\",kdKRyNDxHl,2026-05-31T13:08:39.875Z,2026-05-31T13:31:28.870Z,100,0,0,-100\n\"toti\",kdKRyNDxHl,2026-05-31T13:05:57.821Z,2026-05-31T13:07:02.621Z,100,0,0,-100\n\"Baslucky88\",d5GnHPpzmd,2026-05-31T12:52:44.494Z,2026-05-31T13:07:02.616Z,100,0,0,-100\n\"realclaytontan\",3aDmRHzcSY,2026-05-31T12:01:15.834Z,2026-05-31T13:37:30.362Z,200,814,0,614\n\"jon\",S50hTx3f4W,2026-05-31T11:45:01.442Z,2026-05-31T11:52:27.787Z,20,0,0,-20\n\"nicger\",mQB12J5va_,2026-05-31T11:09:39.995Z,,500,,1334,834\n\"nicger\",mQB12J5va_,2026-05-31T11:04:36.730Z,2026-05-31T11:08:28.020Z,300,0,0,-300\n\"nicger\",mQB12J5va_,2026-05-31T10:56:06.799Z,2026-05-31T11:02:50.801Z,150,0,0,-150\n\"nicger\",mQB12J5va_,2026-05-31T10:53:10.398Z,2026-05-31T10:55:18.793Z,100,0,0,-100\n\"arpeggi\",15Yb4mRYvF,2026-05-31T10:48:59.014Z,,100,1037,187,1124\n\"arpeggi\",15Yb4mRYvF,2026-05-31T10:46:17.240Z,2026-05-31T10:47:34.751Z,20,0,0,-20\n\"realclaytontan\",3aDmRHzcSY,2026-05-31T10:43:35.227Z,2026-05-31T12:00:43.420Z,300,500,0,200\n\"Bokong\",oEjeIX4iN0,2026-05-31T10:36:50.803Z,2026-05-31T10:39:31.695Z,50,0,0,-50\n\"Bokong\",oEjeIX4iN0,2026-05-31T10:03:03.982Z,2026-05-31T10:35:47.488Z,50,0,0,-50\n\"realclaytontan\",3aDmRHzcSY,2026-05-31T09:59:40.289Z,2026-05-31T10:42:42.342Z,200,0,0,-200\n\"realclaytontan\",3aDmRHzcSY,2026-05-31T09:51:51.980Z,2026-05-31T09:58:01.755Z,200,0,0,-200\n\"nicger\",mQB12J5va_,2026-05-31T09:41:33.705Z,2026-05-31T10:51:42.688Z,50,0,0,-50\n\"nicger\",mQB12J5va_,2026-05-31T09:33:34.823Z,2026-05-31T09:40:12.865Z,50,0,0,-50\n\"nic\",blyyg6q3R-,2026-05-31T09:18:52.309Z,2026-05-31T09:32:15.731Z,50,50,0,0\n\"realclaytontan\",3aDmRHzcSY,2026-05-31T09:12:55.992Z,2026-05-31T09:50:49.195Z,200,0,0,-200\n\"nic\",blyyg6q3R-,2026-05-31T09:11:41.899Z,2026-05-31T09:15:18.033Z,25,0,0,-25\n\"Brayden\",-534c8ICbF,2026-05-31T09:04:36.943Z,2026-05-31T09:24:20.572Z,150,0,0,-150\n\"toti\",kdKRyNDxHl,2026-05-31T09:00:36.401Z,2026-05-31T13:04:58.796Z,600,0,0,-600\n\"Bubul\",DYXLwRPWuA,2026-05-31T08:58:25.928Z,2026-05-31T10:44:55.562Z,20,473,0,453\n\"toti\",kdKRyNDxHl,2026-05-31T08:52:07.926Z,2026-05-31T08:58:25.925Z,100,0,0,-100\n\"Bokong\",oEjeIX4iN0,2026-05-31T08:49:16.830Z,2026-05-31T10:01:16.441Z,150,0,0,-150\n\"toti\",kdKRyNDxHl,2026-05-31T08:41:42.381Z,2026-05-31T08:49:16.826Z,100,0,0,-100\n\"nic\",blyyg6q3R-,2026-05-31T08:36:36.467Z,2026-05-31T09:09:40.194Z,25,0,0,-25\n\"Brayden\",-534c8ICbF,2026-05-31T08:33:51.962Z,2026-05-31T09:03:46.919Z,100,0,0,-100\n\"Bokong\",oEjeIX4iN0,2026-05-31T08:32:43.434Z,2026-05-31T08:47:47.682Z,100,0,0,-100\n\"nic\",blyyg6q3R-,2026-05-31T08:33:51.957Z,2026-05-31T08:35:32.750Z,50,0,0,-50\n\"toti\",kdKRyNDxHl,2026-05-31T08:31:38.188Z,2026-05-31T08:40:59.694Z,100,0,0,-100\n\"nic\",blyyg6q3R-,2026-05-31T08:27:25.875Z,2026-05-31T08:31:38.185Z,50,0,0,-50\n\"realclaytontan\",3aDmRHzcSY,2026-05-31T08:23:47.871Z,2026-05-31T09:11:41.895Z,100,0,0,-100\n\"Bokong\",oEjeIX4iN0,2026-05-31T08:23:47.867Z,2026-05-31T08:31:38.180Z,50,0,0,-50\n\"nic\",blyyg6q3R-,2026-05-31T08:22:48.367Z,2026-05-31T08:24:44.980Z,50,0,0,-50\n\"Bokong\",oEjeIX4iN0,2026-05-31T08:17:01.296Z,2026-05-31T08:22:48.364Z,50,0,0,-50\n\"nic\",blyyg6q3R-,2026-05-31T08:17:01.293Z,2026-05-31T08:21:28.593Z,50,0,0,-50\n\"Brayden\",-534c8ICbF,2026-05-31T08:13:45.987Z,2026-05-31T08:32:43.430Z,50,0,0,-50\n\"Jovi\",O-3L4966Ji,2026-05-31T08:07:26.323Z,2026-05-31T12:16:26.509Z,40,596,0,556\n\"nic\",blyyg6q3R-,2026-05-31T08:05:57.549Z,2026-05-31T08:16:19.715Z,50,0,0,-50\n\"Jovi\",O-3L4966Ji,2026-05-31T08:05:57.547Z,2026-05-31T08:06:50.101Z,20,0,0,-20\n\"toti\",kdKRyNDxHl,2026-05-31T08:05:36.595Z,2026-05-31T08:30:20.887Z,100,0,0,-100\n\"Jovi\",O-3L4966Ji,2026-05-31T08:04:24.728Z,2026-05-31T08:05:36.593Z,20,0,0,-20\n\"nic\",blyyg6q3R-,2026-05-31T08:02:20.984Z,2026-05-31T08:05:36.590Z,50,0,0,-50\n\"Jovi\",O-3L4966Ji,2026-05-31T08:01:21.434Z,2026-05-31T08:03:38.993Z,20,0,0,-20\n\"Jovi\",O-3L4966Ji,,2026-05-31T08:01:09.322Z,50,50,0,0\n\"Dragonpeng\",wihuTZi7G-,2026-05-31T08:01:21.431Z,2026-05-31T10:35:47.481Z,50,0,0,-50\n"}],"legacyCsv":"game,date,player,buy_in,buy_out,net\n1,2026-05-24,Jon,250,282,32\n1,2026-05-24,Clayton,248,0,-248\n1,2026-05-24,Sandro,500,172,-328\n1,2026-05-24,Halim,150,626,476\n1,2026-05-24,Jovi,120,188,68\n2,2026-05-26,Jon,149,299,150\n2,2026-05-26,Clayton,500,700,200\n2,2026-05-26,Brayden,69,869,800\n2,2026-05-26,Peng,1000,1000,0\n2,2026-05-26,Sandro,400,400,0\n2,2026-05-26,Ethan,1193,43,-1150\n2,2026-05-26,Halim,1550,1550,0\n3,2026-05-27,Jon,90,300,210\n3,2026-05-27,Clayton,1267.63,1213.83,-53.80\n3,2026-05-27,Brayden,300,750,450\n3,2026-05-27,Sandro,550,113.84,-436.16\n3,2026-05-27,Jovan,483.50,83.50,-400\n3,2026-05-27,Ethan,650,508.08,-141.92\n3,2026-05-27,Reno,150,521.88,371.88\n4,2026-05-27,Jon,200,200,0\n4,2026-05-27,Clayton,1275,1524,249\n4,2026-05-27,Brayden,100,100,0\n4,2026-05-27,Sandro,100,200,100\n4,2026-05-27,Halim,349,0,-349\n5,2026-05-27,Jon,100,0,-100\n5,2026-05-27,Clayton,100,264,164\n5,2026-05-27,Jovi,31.50,0,-31.50\n5,2026-05-27,Sandro,300,925.50,625.50\n5,2026-05-27,Halim,1100,167,-933\n5,2026-05-27,Ethan,100,375,275\n6,2026-05-27,Jon,200,200,0\n6,2026-05-27,Clayton,1150,1100,-50\n6,2026-05-27,Halim,104,145,41\n6,2026-05-27,Sandro,0,149,149\n6,2026-05-27,Ethan,100,0,-100\n6,2026-05-27,Reno,20,0,-20\n6,2026-05-27,Jovi,20,0,-20\n7,2026-05-28,Jon,100,0,-100\n7,2026-05-28,Ethan,0,100,100\n8,2026-05-28,Jon,1000,580,-420\n8,2026-05-28,Clayton,270,1635,1365\n8,2026-05-28,Halim,3250,143,-3107\n8,2026-05-28,Sandro,1500,402,-1098\n8,2026-05-28,Ethan,689,1689,1000\n8,2026-05-28,Reno,150,450,300\n8,2026-05-28,Jovi,20,1820,1800\n8,2026-05-28,Brayden,200,360,160\n9,2026-05-29,Jon,1688,1402,-286\n9,2026-05-29,Clayton,457,757,300\n9,2026-05-29,Halim,1350,1035,-315\n9,2026-05-29,Sandro,1869,669,-1200\n9,2026-05-29,Ethan,2880,3228,348\n9,2026-05-29,Reno,201,250,49\n9,2026-05-29,Jovi,230,1663,1433\n9,2026-05-29,Brayden,625,1172,547\n9,2026-05-29,Kim,200,547,347\n9,2026-05-29,Jovan,600,625,25\n9,2026-05-29,James,200,192,-8\n9,2026-05-29,Winston,300,271,-29\n9,2026-05-29,Marco,563,238,-325\n9,2026-05-29,Frey,3000,2564,-436\n9,2026-05-29,Bas,450,0,-450\n10,2026-05-30,Jon,100,670,570\n10,2026-05-30,Clayton,400,270,-130\n10,2026-05-30,Sandro,150,150,0\n10,2026-05-30,Matthew,300,80,-220\n10,2026-05-30,Raynard,220,0,-220\n10,2026-05-30,Calvin,50,80,30\n10,2026-05-30,RJ,200,170,-30\n11,2026-05-30,Jon,450,541,91\n11,2026-05-30,Clayton,650,0,-650\n11,2026-05-30,Sandro,350,105,-245\n11,2026-05-30,Matthew,50,740,690\n11,2026-05-30,Raynard,50,50,0\n11,2026-05-30,Brayden,205,382,177\n11,2026-05-30,RJ,100,50,-50\n11,2026-05-30,Sammy,50,37,-13\n12,2026-05-30,Clayton,0,100,100\n12,2026-05-30,Sandro,100,0,-100\n14,2026-05-31,Jon,50,0,-50\n14,2026-05-31,Clayton,500,630,130\n14,2026-05-31,Halim,100,567,467\n14,2026-05-31,Sandro,70,137,67\n14,2026-05-31,Ethan,1650,628,-1022\n14,2026-05-31,Reno,150,100,-50\n14,2026-05-31,Jovi,100,103,3\n14,2026-05-31,Brayden,450,454,4\n14,2026-05-31,Bubul,220,211,-9\n14,2026-05-31,Darren,75,535,460\n"};
+
+const $ = s => document.querySelector(s);
+const fmt = n => (n<0?'-':'') + Math.abs(Math.round(n)).toLocaleString();
+const money = n => { const v=Math.round(n*100)/100; return v.toLocaleString(undefined,{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2}); };
+const sign = n => n>0?'pos':n<0?'neg':'zero';
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+let CUR='$';
+let DB={imports:[],players:{},settlements:[],settleHub:null,legacyCsv:'',source:'preview'};
+const LEGACY_HOURS=2;
+let PAID={};
+let activeTab='settle', activeWeek=null, sortKey='net', sortDir=-1;
+
+/* ---------- CSV ---------- */
+function parseLine(line){ const o=[];let c='',q=false; for(const ch of line){ if(ch==='"')q=!q; else if(ch===','&&!q){o.push(c);c='';} else c+=ch; } o.push(c); return o.map(x=>x.trim()); }
+function buildLegacy(text){
+  if(!text||!text.trim()) return [];
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
+  const head=parseLine(lines[0]).map(h=>h.toLowerCase());
+  const gi=head.indexOf('game'),di=head.indexOf('date'),pi=head.indexOf('player'),bii=head.indexOf('buy_in'),boi=head.indexOf('buy_out'),ni=head.indexOf('net');
+  const games={};
+  for(let i=1;i<lines.length;i++){ const c=parseLine(lines[i]); if(c.length<3) continue;
+    const gm=c[gi], date=c[di], name=c[pi];
+    const g=games[gm]??={id:'legacy-'+gm,file:'legacy.csv',label:'Game '+gm+' \u00b7 logged',dateKey:date,statsOnly:true,csv:'',sessions:[]};
+    g.sessions.push({nick:name,pid:name,start:date+'T18:00:00Z',end:date+'T'+(18+LEGACY_HOURS)+':00:00Z',bi:+c[bii]||0,bo:+c[boi]||0,st:0,net:+c[ni]||0,open:false});
+  }
+  return Object.values(games).sort((a,b)=>(+a.id.split('-')[1])-(+b.id.split('-')[1]));
+}
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim()); if(!lines.length) return [];
+  const head=parseLine(lines[0]).map(h=>h.toLowerCase()); const idx=n=>head.indexOf(n);
+  const ci={nick:idx('player_nickname'),pid:idx('player_id'),start:idx('session_start_at'),end:idx('session_end_at'),bi:idx('buy_in'),bo:idx('buy_out'),st:idx('stack'),net:idx('net')};
+  const out=[];
+  for(let i=1;i<lines.length;i++){ const c=parseLine(lines[i]); if(c.length<3) continue;
+    const bi=+c[ci.bi]||0, bo=+c[ci.bo]||0, st=+c[ci.st]||0;
+    const net=ci.net>-1&&c[ci.net]!==''?+c[ci.net]:(bo+st-bi);
+    out.push({nick:c[ci.nick]||'?',pid:(c[ci.pid]||c[ci.nick]||'?'),start:c[ci.start]||'',end:c[ci.end]||'',bi,bo,st,net,open:!c[ci.end]});
+  }
+  return out;
+}
+
+/* ---------- week / date ---------- */
+function isoWeek(d){ const t=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())); const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const ys=new Date(Date.UTC(t.getUTCFullYear(),0,1)); const wk=Math.ceil(((t-ys)/864e5+1)/7); return t.getUTCFullYear()+'-W'+String(wk).padStart(2,'0'); }
+function gameDate(g){ if(g.dateKey) return new Date(g.dateKey); const s=g.sessions.find(x=>x.start||x.end); return new Date((s&&(s.start||s.end))||Date.now()); }
+function weekOf(g){ return g.weekKey || isoWeek(gameDate(g)); }
+function weekLabel(wk){
+  let d=null; const g=DB.imports.find(x=>weekOf(x)===wk); if(g)d=gameDate(g);
+  if(!d){ const s=(DB.settlements||[]).find(s=>s.week===wk); if(s&&s.date)d=new Date(s.date); }
+  if(!d) return wk;
+  const day=d.getUTCDay()||7; const mon=new Date(d); mon.setUTCDate(d.getUTCDate()-day+1);
+  return mon.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+}
+function fmtDur(ms){ if(!ms||ms<0) return '\u2014'; const h=ms/36e5; return h<1?Math.round(h*60)+'m':h.toFixed(1)+'h'; }
+
+/* ---------- aggregation (merges identities via DB.players) ---------- */
+function canon(pid){ return DB.players[pid]||pid; }
+function aggregate(sessions){
+  const m={};
+  for(const s of sessions){
+    const k=canon(s.pid);
+    const p=m[k]??={key:k,pid:k,override:DB.players[s.pid]||null,names:{},lastSeen:'',net:0,bi:0,bo:0,st:0,n:0,wins:0,losses:0,big:-1e9,bigL:1e9,ms:0,open:false};
+    if(DB.players[s.pid])p.override=DB.players[s.pid];
+    p.names[s.nick]=(p.names[s.nick]||0)+1;
+    if((s.start||'')>p.lastSeen)p.lastSeen=s.start;
+    p.net+=s.net;p.bi+=s.bi;p.bo+=s.bo;p.st+=s.st;p.n++;
+    if(s.net>0)p.wins++;else if(s.net<0)p.losses++;
+    p.big=Math.max(p.big,s.net);p.bigL=Math.min(p.bigL,s.net);
+    if(s.open)p.open=true;
+    if(s.start&&s.end)p.ms+=new Date(s.end)-new Date(s.start);
+  }
+  return Object.values(m).map(p=>{
+    const names=Object.entries(p.names).sort((a,b)=>b[1]-a[1]);
+    p.name=p.override||names[0][0];
+    p.aliases=names.map(x=>x[0]).filter(n=>n!==p.name);
+    p.roi=p.bi>0?p.net/p.bi:0; p.perHr=p.ms>0?p.net/(p.ms/36e5):null;
+    return p;
+  });
+}
+function settle(players){
+  const cred=players.filter(p=>p.net>0).map(p=>({name:p.name,amt:p.net})).sort((a,b)=>b.amt-a.amt);
+  const debt=players.filter(p=>p.net<0).map(p=>({name:p.name,amt:-p.net})).sort((a,b)=>b.amt-a.amt);
+  const tx=[];let i=0,j=0;
+  while(i<debt.length&&j<cred.length){
+    const pay=Math.min(debt[i].amt,cred[j].amt);
+    if(pay>0.5)tx.push({from:debt[i].name,to:cred[j].name,amt:Math.round(pay)});
+    debt[i].amt-=pay;cred[j].amt-=pay;
+    if(debt[i].amt<0.5)i++; if(cred[j].amt<0.5)j++;
+  }
+  return tx;
+}
+function settleHub(players,hub){
+  const tx=[];
+  players.filter(p=>p.name!==hub&&p.net<-0.5).sort((a,b)=>a.net-b.net).forEach(p=>tx.push({from:p.name,to:hub,amt:Math.round(-p.net)}));
+  players.filter(p=>p.name!==hub&&p.net>0.5).sort((a,b)=>b.net-a.net).forEach(p=>tx.push({from:hub,to:p.name,amt:Math.round(p.net)}));
+  return tx;
+}
+function computeTx(wk){ const ps=aggregate(sessionsInWeek(wk)); return DB.settleHub?settleHub(ps,DB.settleHub):settle(ps); }
+function staticRow(from,to,amt){ return `<div class="settle-row"><span class="who"><span class="from">${esc(from)}</span> <span class="arr">pays</span> <span class="to">${esc(to)}</span></span><span class="amt">${CUR}${money(amt)}</span></div>`; }
+const sessionsInWeek=wk=>DB.imports.filter(g=>!g.statsOnly&&weekOf(g)===wk).flatMap(g=>g.sessions);
+function allWeeks(){ const ws=new Set(DB.imports.filter(g=>!g.statsOnly).map(weekOf)); (DB.settlements||[]).forEach(s=>ws.add(s.week)); return [...ws].sort().reverse(); }
+
+/* ---------- paid state (localStorage) ---------- */
+const PKEY='pokerledger:paid';
+function loadPaid(){ try{ const v=localStorage.getItem(PKEY); PAID=v?JSON.parse(v):{}; }catch(e){ PAID={}; } }
+function savePaid(){ try{ localStorage.setItem(PKEY,JSON.stringify(PAID)); }catch(e){} }
+const txId=(wk,t,i)=>wk+'|'+i+'|'+t.from+'>'+t.to+'|'+Math.round(t.amt);
+function paidState(wk,id,def){ if(PAID[wk]&&Object.prototype.hasOwnProperty.call(PAID[wk],id)) return !!PAID[wk][id]; return def; }
+function setPaid(wk,id,val){ (PAID[wk]??={})[id]=val?1:0; savePaid(); }
+
+/* ---------- loader ---------- */
+function applyMeta(man){ if(man.currency)CUR=man.currency; DB.players=man.players||{}; DB.settlements=man.settlements||[]; DB.settleHub=man.settleHub||null; }
+async function load(){
+  try{
+    const mres=await fetch('ledgers/manifest.json',{cache:'no-store'}); if(!mres.ok) throw 0;
+    const man=await mres.json(); applyMeta(man);
+    const list=man.ledgers||[]; const imports=[];
+    for(const e of list){ try{ const r=await fetch('ledgers/'+e.file,{cache:'no-store'}); if(!r.ok) continue;
+      const csv=await r.text(); imports.push({id:e.file,file:e.file,label:e.label||e.file,dateKey:e.date||'',weekKey:e.week||'',csv,sessions:parseCSV(csv)}); }catch(_){}
+    }
+    if(!imports.length && !(DB.settlements&&DB.settlements.length)) throw 0;
+    if(man.legacyLog){ try{ const lr=await fetch('ledgers/'+man.legacyLog,{cache:'no-store'}); if(lr.ok){ DB.legacyCsv=await lr.text(); imports.push(...buildLegacy(DB.legacyCsv)); } }catch(_){} }
+    DB.imports=imports; DB.source='repo';
+  }catch(_){
+    CUR=FB.currency||'$'; DB.players=FB.players||{}; DB.settlements=FB.settlements||[]; DB.settleHub=FB.settleHub||null; DB.legacyCsv=FB.legacyCsv||'';
+    DB.imports=(FB.ledgers||[]).map(e=>({id:e.file,file:e.file,label:e.label,dateKey:e.date,weekKey:e.week||'',csv:e.csv,sessions:parseCSV(e.csv)})).concat(buildLegacy(DB.legacyCsv));
+    DB.source='preview';
+  }
+}
+
+/* ---------- render ---------- */
+function render(){
+  const weeks=allWeeks();
+  if(!activeWeek||!weeks.includes(activeWeek)) activeWeek=weeks[0]||null;
+  $('#weekSel').innerHTML = weeks.map(w=>`<option value="${w}" ${w===activeWeek?'selected':''}>${weekLabel(w)} \u00b7 ${w}</option>`).join('')||'<option>\u2014</option>';
+  $('#sub').innerHTML = DB.source==='repo'
+    ? `Loaded <b style="color:var(--gold)">${DB.imports.length}</b> game${DB.imports.length!==1?'s':''} from the repo \u00b7 settle up at week\u2019s end`
+    : `Welcome Degens`;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===activeTab));
+  const wp=document.querySelector('.weekpick'); if(wp) wp.style.display = activeTab==='settle' ? 'flex' : 'none';
+  const viewFn={settle:viewSettle,players:viewPlayers,games:viewGames,life:viewLife,files:viewFiles,add:viewAdd,guide:viewGuide}[activeTab];
+  let out; try{ out=viewFn(); }catch(e){ out=`<div class="card"><div class="flag">Couldn\u2019t render this tab: ${esc(e.message)}</div></div>`; }
+  $('#view').innerHTML = out;
+  wireView();
+}
+
+function txRow(id,from,to,amt,paid){
+  return `<div class="settle-row ${paid?'paid':''}">
+    <input type="checkbox" class="chk" data-paid="${id}" ${paid?'checked':''}>
+    <span class="who"><span class="from">${esc(from)}</span> <span class="arr">pays</span> <span class="to">${esc(to)}</span></span>
+    <span class="amt">${CUR}${money(amt)}</span></div>`;
+}
+
+function viewSettle(){
+  const ss=sessionsInWeek(activeWeek), ps=aggregate(ss);
+  const recorded=(DB.settlements||[]).filter(s=>s.week===activeWeek);
+  const games=DB.imports.filter(g=>weekOf(g)===activeWeek).length;
+  let html='';
+
+  if(recorded.length){
+    recorded.forEach((rec,ri)=>{
+      const groups=rec.groups||[{title:'',hub:null,tx:rec.tx||[]}];
+      const net={};
+      groups.forEach(g=>g.tx.forEach(t=>{ net[t.to]=(net[t.to]||0)+t.amount; net[t.from]=(net[t.from]||0)-t.amount; }));
+      const stand=Object.entries(net).map(([name,n])=>({name,net:n})).sort((a,b)=>b.net-a.net);
+      const maxAbs=Math.max(1,...stand.map(s=>Math.abs(s.net)));
+      let pay='';
+      groups.forEach((grp,gi)=>{
+        const hub=grp.hub;
+        const collect=hub?grp.tx.filter(t=>t.to===hub):grp.tx;
+        const payout=hub?grp.tx.filter(t=>t.from===hub):[];
+        pay+=`<div style="margin-top:${gi?18:4}px">`;
+        if(grp.title) pay+=`<div style="font-weight:600;color:var(--gold);font-size:13.5px;margin-bottom:8px">${esc(grp.title)}</div>`;
+        collect.forEach(t=>pay+=staticRow(t.from,t.to,t.amount));
+        if(payout.length) pay+=`<div class="hint" style="margin:10px 0 4px">then ${esc(hub)} pays out</div>`;
+        payout.forEach(t=>pay+=staticRow(t.from,t.to,t.amount));
+        pay+=`</div>`;
+      });
+      const sid='legacy-'+ri;
+      html+=`<div class="card">
+        <h2>${esc(rec.label||'Settlement')}</h2>
+        <div class="cap">Week of ${weekLabel(activeWeek)} \u00b7 recorded as settled</div>
+        <div class="flag ok" style="margin:0 0 16px">\u2713 Marked paid \u2014 historical record</div>
+        <div style="font-weight:600;margin-bottom:8px">Overall standings</div>
+        ${stand.map(s=>{const w=Math.abs(s.net)/maxAbs*100;return `
+          <div style="display:flex;align-items:center;gap:12px;padding:6px 0">
+            <div style="width:110px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name)}</div>
+            <div class="bar" style="flex:1"><i style="${s.net>=0?'left:50%':'right:50%'};width:${w/2}%;background:${s.net>=0?'var(--green)':'var(--red)'}"></i><i style="left:50%;width:1px;background:var(--faint);opacity:.4"></i></div>
+            <div class="num ${sign(s.net)}" style="width:92px;text-align:right;font-weight:700">${s.net>=0?'+':''}${CUR}${money(s.net)}</div>
+          </div>`;}).join('')}
+        <div class="row" style="margin-top:16px"><button class="btn ghost sm" data-toggle="${sid}">View recorded payments</button></div>
+        <div class="file-body" id="${sid}" style="padding:14px 0 0">${pay}</div>
+        ${rec.note?`<div class="flag info">\u26a0 ${esc(rec.note)}</div>`:''}
+      </div>`;
+    });
+  } else {
+    const total=ps.reduce((a,p)=>a+p.net,0), balanced=Math.abs(total)<0.5, open=ps.filter(p=>p.open);
+    const hub=DB.settleHub||null;
+    const tx=hub?settleHub(ps,hub):settle(ps);
+    tx.forEach((t,i)=>t._id=txId(activeWeek,t,i));
+    const paidCount=tx.filter(t=>paidState(activeWeek,t._id,false)).length;
+    const pct=tx.length?Math.round(paidCount/tx.length*100):0;
+    const copyText=tx.map(t=>`${paidState(activeWeek,t._id,false)?'\u2705':'\u2b1c'} ${t.from} \u2192 ${t.to}: ${CUR}${money(t.amt)}`).join('\n');
+    let rows;
+    if(hub){
+      const collect=tx.filter(t=>t.to===hub), payout=tx.filter(t=>t.from===hub);
+      rows=`<div style="font-weight:600;color:var(--gold);font-size:13.5px;margin-bottom:8px">Everyone pays ${esc(hub)}</div>`
+        +collect.map(t=>txRow(t._id,t.from,t.to,t.amt,paidState(activeWeek,t._id,false))).join('')
+        +(payout.length?`<div class="hint" style="margin:12px 0 6px">then ${esc(hub)} pays out</div>`:'')
+        +payout.map(t=>txRow(t._id,t.from,t.to,t.amt,paidState(activeWeek,t._id,false))).join('');
+    } else {
+      rows=tx.map(t=>txRow(t._id,t.from,t.to,t.amt,paidState(activeWeek,t._id,false))).join('');
+    }
+    html+=`<div class="card">
+      <h2>Who pays <span class="it">who</span></h2>
+      <div class="cap">Week of ${weekLabel(activeWeek)} \u00b7 ${games} game${games!==1?'s':''}${hub?' \u00b7 routed through '+esc(hub):''} \u00b7 tick each off as it lands</div>
+      ${hub?`<div style="display:flex;align-items:center;gap:14px;background:rgba(224,183,94,.08);border:1px solid rgba(224,183,94,.2);border-radius:12px;padding:13px 16px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="font-size:20px">&#128178;</div>
+        <div><div style="font-weight:700;font-size:14px">Contact Person &mdash; Clayton Tan</div>
+        <div style="font-size:12.5px;color:var(--mut);margin-top:2px">
+          Clayton Tan &nbsp;&middot;&nbsp; WhatsApp &amp; Zelle <span style="font-family:var(--mono);font-size:12px;color:var(--gold)">619-317-4437</span>
+        </div></div>
+      </div>`:''}
+      ${tx.length?`
+        <div class="prog"><i style="width:${pct}%"></i></div>
+        <div class="hint" style="margin:0 0 14px">${paidCount} of ${tx.length} payments done</div>
+        ${rows}
+        <div class="row" style="margin-top:18px">
+          <button class="btn" id="copyBtn">Copy status for group chat</button>
+          <button class="btn ghost sm" id="allPaid">Mark all paid</button>
+          <button class="btn ghost sm" id="resetPaid">Reset</button>
+        </div>
+        <textarea id="copySrc" style="position:absolute;left:-9999px">${copyText}</textarea>
+      `:'<div class="hint">Everyone broke even \u2014 nothing to settle.</div>'}
+      ${balanced?`<div class="flag ok">\u2713 Books balance \u2014 every chip accounted for</div>`:`<div class="flag">\u26a0 Week is off by ${CUR}${money(total)}. A buy-out or stack is probably missing.</div>`}
+      ${open.length?`<div class="flag info">\u26a0 ${open.map(p=>esc(p.name)).join(', ')} still had a live stack at export \u2014 counted as cash-out.</div>`:''}
+    </div>`;
+  }
+
+  if(ss.length){
+    const pot=ss.reduce((a,s)=>a+s.bi,0);
+    const winner=ps.slice().sort((a,b)=>b.net-a.net)[0], loser=ps.slice().sort((a,b)=>a.net-b.net)[0];
+    const sorted=ps.slice().sort((a,b)=>b.net-a.net), maxAbs=Math.max(1,...ps.map(p=>Math.abs(p.net)));
+    const cap=recorded.length?'Logged this week (not in the settlement above)':'Logged games this week';
+    html+=`<div class="card">
+      <h2>The <span class="it">night\u2019s</span> story</h2><div class="cap">${cap}</div>
+      <div class="statgrid">
+        <div class="stat"><div class="k">On the table</div><div class="v">${CUR}${fmt(pot)}</div><div class="vsub">total bought in</div></div>
+        <div class="stat"><div class="k">Players</div><div class="v">${ps.length}</div><div class="vsub">${ss.length} sessions</div></div>
+        <div class="stat"><div class="k">Big winner</div><div class="v pos">${esc(winner?winner.name:'\u2014')}</div><div class="vsub num pos">+${CUR}${fmt(winner?winner.net:0)}</div></div>
+        <div class="stat"><div class="k">Big loser</div><div class="v neg">${esc(loser?loser.name:'\u2014')}</div><div class="vsub num neg">${CUR}${fmt(loser?loser.net:0)}</div></div>
+      </div>
+    </div>
+    <div class="card"><h2>Net by <span class="it">player</span></h2><div class="cap">${cap}</div>
+      ${sorted.map(p=>{const w=Math.abs(p.net)/maxAbs*100;return `
+        <div style="display:flex;align-items:center;gap:12px;padding:7px 0">
+          <div style="width:120px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</div>
+          <div class="bar" style="flex:1"><i style="${p.net>=0?'left:50%':'right:50%'};width:${w/2}%;background:${p.net>=0?'var(--green)':'var(--red)'}"></i><i style="left:50%;width:1px;background:var(--faint);opacity:.4"></i></div>
+          <div class="num ${sign(p.net)}" style="width:80px;text-align:right;font-weight:700">${p.net>=0?'+':''}${CUR}${fmt(p.net)}</div>
+        </div>`;}).join('')}
+    </div>`;
+  }
+  return html;
+}
+
+function viewPlayers(){
+  const ps=aggregate(DB.imports.flatMap(g=>g.sessions));
+  if(!ps.length) return `<div class="card"><div class="empty"><div class="big">No games yet</div>Add a ledger to the repo to see player stats.</div></div>`;
+  ps.sort((a,b)=>(typeof a[sortKey]==='string'?a[sortKey].localeCompare(b[sortKey]):(a[sortKey]-b[sortKey]))*sortDir);
+  const th=(k,l,sm)=>`<th class="sortable ${sm?'hide-sm':''}" data-k="${k}">${l}${sortKey===k?(sortDir<0?' \u2193':' \u2191'):''}</th>`;
+  return `<div class="card">
+    <h2>Player <span class="it">performance</span></h2>
+    <div class="cap">All games \u2014 tap a header to sort</div>
+    <div style="overflow-x:auto"><table>
+      <tr>${th('name','Player')}${th('net','Net')}${th('bi','Buy-in',1)}${th('roi','ROI',1)}${th('n','Sess')}${th('wins','W-L',1)}${th('big','Best',1)}${th('ms','Time',1)}${th('perHr','$/hr',1)}</tr>
+      ${ps.map(p=>`<tr>
+        <td><div class="pname"><span class="dot" style="background:${p.net>0?'var(--green)':p.net<0?'var(--red)':'var(--faint)'}"></span><span>${esc(p.name)}${p.open?' <span class="alias">\u00b7 live</span>':''}${p.aliases.length?`<div class="alias">aka ${p.aliases.map(esc).join(', ')}</div>`:''}</span></div></td>
+        <td class="num ${sign(p.net)}" style="font-weight:700">${p.net>=0?'+':''}${fmt(p.net)}</td>
+        <td class="num hide-sm">${fmt(p.bi)}</td>
+        <td class="num ${sign(p.roi)} hide-sm">${(p.roi*100>=0?'+':'')}${(p.roi*100).toFixed(0)}%</td>
+        <td class="num">${p.n}</td>
+        <td class="num hide-sm">${p.wins}-${p.losses}</td>
+        <td class="num pos hide-sm">+${fmt(p.big>0?p.big:0)}</td>
+        <td class="num hide-sm">${fmtDur(p.ms)}</td>
+        <td class="num ${p.perHr==null?'zero':sign(p.perHr)} hide-sm">${p.perHr==null?'\u2014':(p.perHr>=0?'+':'')+fmt(p.perHr)}</td>
+      </tr>`).join('')}
+    </table></div>
+    <div class="hint">Players are merged by identity, so one person under several nicknames or accounts is combined (other nicknames shown beneath the name). Time and $/hr for legacy logged games assume ${LEGACY_HOURS}h each, since no session times were recorded.</div>
+  </div>`;
+}
+
+function viewGames(){
+  const games=DB.imports.slice().sort((a,b)=>gameDate(b)-gameDate(a));
+  return `<div class="card">
+    <h2>Game <span class="it">log</span></h2>
+    <div class="cap">${games.length} night${games.length!==1?'s':''} recorded \u2014 tap to expand</div>
+    ${games.map(g=>{const ps=aggregate(g.sessions);const pot=g.sessions.reduce((a,s)=>a+s.bi,0);const d=gameDate(g);return `
+      <div class="file-item">
+        <div class="file-head" data-toggle="g-${slug(g.id)}" style="cursor:pointer">
+          <div><div class="gt">${esc(g.label||'Game')}</div><div class="gd">${d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'})} \u00b7 week ${weekOf(g)}</div></div>
+          <div style="margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--mut)">${ps.length}p \u00b7 ${CUR}${fmt(pot)} in</div>
+        </div>
+        <div class="file-body" id="g-${slug(g.id)}">
+          <table><tr><th>Player</th><th>Buy-in</th><th>Out+stack</th><th>Net</th></tr>
+          ${ps.sort((a,b)=>b.net-a.net).map(p=>`<tr><td>${esc(p.name)}</td><td class="num">${fmt(p.bi)}</td><td class="num">${fmt(p.bo+p.st)}</td><td class="num ${sign(p.net)}">${p.net>=0?'+':''}${fmt(p.net)}</td></tr>`).join('')}
+          </table>
+        </div>
+      </div>`;}).join('')}
+  </div>`;
+}
+
+function viewLife(){
+  const all=DB.imports.flatMap(g=>g.sessions), ps=aggregate(all); ps.sort((a,b)=>b.net-a.net);
+  const games=DB.imports.slice().sort((a,b)=>gameDate(a)-gameDate(b)); const series={};
+  for(const g of games){ for(const p of aggregate(g.sessions)) (series[p.key]??=[]).push(p.net); }
+  const totPot=all.reduce((a,s)=>a+s.bi,0);
+  return `<div class="card">
+    <h2>Lifetime <span class="it">standings</span></h2>
+    <div class="cap">All ${DB.imports.length} games \u00b7 ${CUR}${fmt(totPot)} moved across the table</div>
+    <div style="overflow-x:auto"><table>
+      <tr><th>Player</th><th>Net</th><th class="hide-sm">Games</th><th class="hide-sm">W-L</th><th class="hide-sm">ROI</th><th>Trend</th></tr>
+      ${ps.map((p,i)=>{const s=series[p.key]||[];const mx=Math.max(1,...s.map(Math.abs));const gc=DB.imports.filter(g=>g.sessions.some(x=>canon(x.pid)===p.key)).length;return `<tr>
+        <td><div class="pname"><span style="color:var(--faint);width:18px;display:inline-block">${i+1}</span>${esc(p.name)}</div></td>
+        <td class="num ${sign(p.net)}" style="font-weight:700">${p.net>=0?'+':''}${fmt(p.net)}</td>
+        <td class="num hide-sm">${gc}</td>
+        <td class="num hide-sm">${p.wins}-${p.losses}</td>
+        <td class="num ${sign(p.roi)} hide-sm">${(p.roi*100>=0?'+':'')}${(p.roi*100).toFixed(0)}%</td>
+        <td><div class="spark">${s.map(v=>`<span style="height:${Math.max(3,Math.abs(v)/mx*26)}px;background:${v>=0?'var(--green)':'var(--red)'}" title="${v>=0?'+':''}${fmt(v)}"></span>`).join('')}</div></td>
+      </tr>`;}).join('')}
+    </table></div>
+    <div class="hint">Standings combine every game, including the legacy logged history. Recorded settlements aren\u2019t added here \u2014 only games count toward stats.</div>
+  </div>`;
+}
+
+function viewFiles(){
+  const games=DB.imports.filter(g=>!g.statsOnly).sort((a,b)=>gameDate(b)-gameDate(a));
+  const legNet=DB.legacyCsv?buildLegacy(DB.legacyCsv).flatMap(g=>g.sessions).reduce((a,s)=>a+s.net,0):0;
+  const legGames=DB.legacyCsv?buildLegacy(DB.legacyCsv).length:0;
+  return `<div class="card">
+    <h2>Files &amp; <span class="it">audit</span></h2>
+    <div class="cap">The raw committed ledgers \u2014 the source of truth for every number above</div>
+    ${DB.source==='preview'?'<div class="flag info">\u26a0 Preview using embedded data. Once deployed, this lists the live CSVs from your <code style="font-family:var(--mono)">ledgers/</code> folder.</div>':''}
+    ${games.map(g=>{const ps=aggregate(g.sessions);const total=ps.reduce((a,p)=>a+p.net,0);const pot=g.sessions.reduce((a,s)=>a+s.bi,0);const bal=Math.abs(total)<0.5;const d=gameDate(g);const sid='f-'+slug(g.id);return `
+      <div class="file-item">
+        <div class="file-head">
+          <div><div class="gt">${esc(g.label||g.file)}</div><div class="gd">${d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} \u00b7 ${g.sessions.length} rows \u00b7 ${CUR}${fmt(pot)} in</div></div>
+          <span class="fn">ledgers/${esc(g.file)}</span>
+          <div style="margin-left:auto" class="row">
+            <span style="font-size:12px;font-weight:700;color:${bal?'var(--green)':'var(--red)'}">${bal?'\u2713 balances':'\u26a0 off by '+CUR+fmt(total)}</span>
+            <button class="btn ghost sm" data-toggle="${sid}">View raw</button>
+            <button class="btn ghost sm" data-dl="${esc(g.file)}">Download</button>
+          </div>
+        </div>
+        <div class="file-body" id="${sid}"><pre>${esc(g.csv||'')}</pre></div>
+      </div>`;}).join('')}
+    ${DB.legacyCsv?`
+      <div class="file-item">
+        <div class="file-head">
+          <div><div class="gt">Legacy log (manual)</div><div class="gd">${legGames} games \u00b7 stats only, not settled here</div></div>
+          <span class="fn">ledgers/legacy.csv</span>
+          <div style="margin-left:auto" class="row">
+            <span style="font-size:12px;font-weight:700;color:${Math.abs(legNet)<0.5?'var(--green)':'var(--red)'}">${Math.abs(legNet)<0.5?'\u2713 balances':'\u26a0 off by '+CUR+fmt(legNet)}</span>
+            <button class="btn ghost sm" data-toggle="f-legacy">View raw</button>
+            <button class="btn ghost sm" data-dl="legacy.csv">Download</button>
+          </div>
+        </div>
+        <div class="file-body" id="f-legacy"><pre>${esc(DB.legacyCsv)}</pre></div>
+      </div>`:''}
+    <div class="hint">A green check means that file\u2019s nets sum to zero \u2014 the proof nothing\u2019s missing. The legacy log is a manual history that feeds Players and Lifetime only; it doesn\u2019t affect any settlement.</div>
+  </div>`;
+}
+
+function viewAdd(){
+  return `<div class="card">
+    <h2>Add a <span class="it">game</span> to the repo</h2>
+    <div class="cap">Turn a night\u2019s export into the two things you commit</div>
+    <div class="row" style="margin-bottom:14px">
+      <label class="fld" style="flex:1;min-width:160px">Label<input type="text" id="aLabel" placeholder="e.g. Friday at Marco\u2019s"></label>
+      <label class="fld">Date of game<input type="date" id="aDate"></label>
+    </div>
+    <label class="fld" style="margin-bottom:10px">Paste the CSV export
+      <textarea id="aCSV" placeholder="player_nickname,player_id,session_start_at,session_end_at,buy_in,buy_out,stack,net&#10;..."></textarea>
+    </label>
+    <button class="btn" id="aGen">Prepare files</button>
+    <div id="aOut" style="margin-top:18px"></div>
+    <div class="hint">This doesn\u2019t change the live site by itself \u2014 a static page can\u2019t write to the repo. It hands you (1) the CSV saved with the right filename and (2) the line to paste into <code style="font-family:var(--mono)">ledgers/manifest.json</code>. Commit both and the site picks it up automatically.</div>
+  </div>`;
+}
+
+function viewGuide(){
+  return `<div class="card guide">
+    <h2>How to <span class="it">navigate</span></h2>
+    <div class="cap">Everything in here, and how the repo feeds it</div>
+    ${[
+      ['settle','\u2660','Settlement','The shortest list of payments that squares everyone up for the selected week, with a checkbox per payment and a progress bar. Past weeks can be recorded settlements (shown as already paid). \u201cCopy status\u201d drops a ready list into your group chat.'],
+      ['players','\u2665','Players','Each player\u2019s week: net, buy-in, ROI, sessions, win\u2013loss, biggest pot, time and $/hr. Sort by any column.'],
+      ['games','\u2663','Game log','Every committed night, expandable to a per-player breakdown.'],
+      ['life','\u2666','Lifetime','Running standings across all games with a per-game trend sparkline.'],
+      ['files','\u25a4','Files & audit','The raw committed CSVs with a balance check on each \u2014 where anyone counter-checks the math.'],
+      ['add','+','Add a game','Paste an export and it prepares the CSV file and manifest line for you to commit.']
+    ].map(([t,ic,n,d])=>`<div class="navtile" data-go="${t}"><div class="ic">${ic}</div><div><div class="t">${n}</div><div class="d">${d}</div></div></div>`).join('')}
+
+    <h3>Adding a new game</h3>
+    <ol>
+      <li>Export the night\u2019s ledger CSV (after everyone cashes out).</li>
+      <li>Drop the file into <code>ledgers/</code>, e.g. <code>ledgers/2026-06-08.csv</code>.</li>
+      <li>Add one line to the <code>ledgers</code> array in <code>ledgers/manifest.json</code> \u2014 the <b>Add a game</b> tab writes it for you.</li>
+      <li>Commit. GitHub Pages redeploys and the night flows into every tab.</li>
+    </ol>
+
+    <h3>Names &amp; identities</h3>
+    <p>Players are matched by <b>account ID</b>. When one person plays under several handles or accounts (different rooms), map each ID to a real name in the <code>players</code> block of the manifest:</p>
+    <p><code>"players": { "MJhBZs7fJF": "Ethan", "mQB12J5va_": "Halim" }</code></p>
+    <p>Every ID pointing at the same name is treated as one person everywhere \u2014 stats, settlement and lifetime all merge.</p>
+
+    <h3>Recording a past settlement</h3>
+    <p>Already settled a week by hand? Add an entry to the <code>settlements</code> array in the manifest with the week, a label, <code>"paid": true</code>, and the transactions (optionally grouped with a <code>hub</code>, e.g. everyone pays one person who then pays out). It shows on the Settlement tab for that week as a finished record.</p>
+
+    <h3>How the math works</h3>
+    <p><b>Net</b> = buy-out + remaining stack &minus; buy-in. A week\u2019s nets should sum to zero; if a file is off, Settlement and Files flag it. Games in the same settlement week are pooled before settling. By default the app uses the fewest possible payments; set <code>"settleHub": "Name"</code> in the manifest to instead route everything through one person (everyone pays the hub, the hub pays everyone out).</p>
+
+    <h3>About the paid checkmarks</h3>
+    <p>Tick-offs save in <b>your browser on this device only</b> \u2014 a static site has no shared database. Simplest: one person (the banker) tracks payments. For shared live status, a small backend (free Firebase, or a committed status file) can be added later.</p>
+  </div>`;
+}
+
+/* ---------- events ---------- */
+function download(name,text){ const b=new Blob([text],{type:'text/csv'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1500); }
+function copyNode(node){ const r=document.createRange();r.selectNode(node);const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');}catch(e){}s.removeAllRanges(); }
+
+function wireView(){
+  document.querySelectorAll('[data-paid]').forEach(c=>c.addEventListener('change',()=>{ setPaid(activeWeek,c.dataset.paid,c.checked); render(); }));
+  $('#allPaid')?.addEventListener('click',()=>{ computeTx(activeWeek).forEach((t,i)=>setPaid(activeWeek,txId(activeWeek,t,i),true)); render(); toast('All marked paid'); });
+  $('#resetPaid')?.addEventListener('click',()=>{ delete PAID[activeWeek]; savePaid(); render(); toast('Reset'); });
+  $('#copyBtn')?.addEventListener('click',()=>{ const t=$('#copySrc'); t.select(); try{document.execCommand('copy');}catch(e){} toast('Copied \u2014 paste it in the chat'); });
+  document.querySelectorAll('[data-copyrec]').forEach(b=>b.addEventListener('click',()=>{ const t=$('#recsrc-'+b.dataset.copyrec); t.select(); try{document.execCommand('copy');}catch(e){} toast('Settlement copied'); }));
+  document.querySelectorAll('th.sortable').forEach(h=>h.addEventListener('click',()=>{ const k=h.dataset.k; if(sortKey===k)sortDir*=-1; else{sortKey=k;sortDir=k==='name'?1:-1;} render(); }));
+  document.querySelectorAll('[data-toggle]').forEach(b=>b.addEventListener('click',()=>{ $('#'+b.dataset.toggle)?.classList.toggle('open'); }));
+  document.querySelectorAll('[data-dl]').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.dl==='legacy.csv'){ download('legacy.csv',DB.legacyCsv); return; } const g=DB.imports.find(x=>x.file===b.dataset.dl); if(g)download(g.file,g.csv); }));
+  document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{ activeTab=b.dataset.go; render(); }));
+  const gen=$('#aGen');
+  if(gen){ const d=$('#aDate'); if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
+    gen.addEventListener('click',()=>{
+      const csv=$('#aCSV').value.trim(); const label=$('#aLabel').value.trim()||'Game'; const date=$('#aDate').value||new Date().toISOString().slice(0,10);
+      if(!csv){ $('#aOut').innerHTML='<div class="flag">Paste a ledger first.</div>'; return; }
+      const sessions=parseCSV(csv); if(!sessions.length){ $('#aOut').innerHTML='<div class="flag">Could not read rows \u2014 check the header line.</div>'; return; }
+      const net=sessions.reduce((a,s)=>a+s.net,0);
+      const fname=`${date}.csv`;
+      const manLine=`    { "file": "${fname}", "label": "${label.replace(/"/g,'\\"')}", "date": "${date}" }`;
+      $('#aOut').innerHTML=`
+        <div class="flag ${Math.abs(net)<0.5?'ok':''}">${Math.abs(net)<0.5?'\u2713 Parsed '+sessions.length+' rows \u2014 books balance':'\u26a0 Parsed '+sessions.length+' rows \u2014 off by '+CUR+fmt(net)}</div>
+        <div style="margin-top:14px"><b style="font-size:13px;color:var(--ink)">1. Save this in <span class="fn">ledgers/${esc(fname)}</span></b>
+          <div class="row" style="margin:8px 0"><button class="btn sm" id="aDl">Download ${esc(fname)}</button></div></div>
+        <div style="margin-top:14px"><b style="font-size:13px;color:var(--ink)">2. Add this line to the <span class="fn">ledgers</span> array in manifest.json</b>
+          <pre id="aMan" style="margin-top:8px">${esc(manLine)}</pre>
+          <button class="btn ghost sm" id="aCopyMan">Copy the line</button></div>`;
+      $('#aDl').addEventListener('click',()=>download(fname,csv));
+      $('#aCopyMan').addEventListener('click',()=>{ copyNode($('#aMan')); toast('Manifest line copied'); });
+    });
+  }
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{ activeTab=t.dataset.tab; render(); }));
+$('#weekSel').addEventListener('change',e=>{ activeWeek=e.target.value; render(); });
+let toastT; function toast(m){ const el=$('#toast');el.textContent=m;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2400); }
+
+loadPaid();
+load().then(render);
+</script>
+</body>
+</html>

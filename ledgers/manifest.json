@@ -1,0 +1,77 @@
+{
+  "currency": "$",
+  "settleHub": "Clayton",
+  "legacyLog": "legacy.csv",
+  "players": {
+    "MJhBZs7fJF": "Ethan",
+    "mQB12J5va_": "Halim",
+    "blyyg6q3R-": "Halim",
+    "0oxsPzcrIa": "Peng",
+    "RLhCxDL19I": "Peng",
+    "wihuTZi7G-": "Peng",
+    "XO-P6ChLBL": "Reno",
+    "M27O7piJNR": "Jon",
+    "S50hTx3f4W": "Jon",
+    "jDaq6q7HFV": "Clayton",
+    "3aDmRHzcSY": "Ethan",
+    "d5GnHPpzmd": "Bas",
+    "kdKRyNDxHl": "Frey",
+    "oEjeIX4iN0": "Darren",
+    "15Yb4mRYvF": "Sandro",
+    "O-3L4966Ji": "Jovi",
+    "-534c8ICbF": "Brayden",
+    "DYXLwRPWuA": "Bubul",
+    "K85f7jjyu5": "Marco",
+    "MkDWPpf-PK": "Winston"
+  },
+  "ledgers": [
+    { "file": "2026-06-01.csv", "label": "Monday, Jun 1", "date": "2026-06-01" },
+    { "file": "2026-05-31.csv", "label": "Sunday, May 31", "date": "2026-05-31", "week": "2026-W23" }
+  ],
+  "settlements": [
+    {
+      "id": "2026-W22",
+      "week": "2026-W22",
+      "date": "2026-05-31",
+      "label": "Last week \u2014 final settlement",
+      "paid": true,
+      "note": "This is last week's settlement only. The May 31 game wasn't part of it \u2014 it's rolled into this week's settlement instead.",
+      "groups": [
+        {
+          "title": "LA + Other side \u2014 everyone pays Brayden",
+          "hub": "Brayden",
+          "tx": [
+            { "from": "Halim", "to": "Brayden", "amount": 3886 },
+            { "from": "Jovan", "to": "Brayden", "amount": 375 },
+            { "from": "Winston", "to": "Brayden", "amount": 29 },
+            { "from": "Marco", "to": "Brayden", "amount": 325 },
+            { "from": "Frey", "to": "Brayden", "amount": 1636 },
+            { "from": "Peng", "to": "Brayden", "amount": 50 },
+            { "from": "James", "to": "Brayden", "amount": 8 },
+            { "from": "Bas", "to": "Brayden", "amount": 446 },
+            { "from": "Brayden", "to": "Jovi", "amount": 3748.50 },
+            { "from": "Brayden", "to": "Reno", "amount": 650.88 },
+            { "from": "Brayden", "to": "Darren", "amount": 10 },
+            { "from": "Brayden", "to": "Kim", "amount": 347 },
+            { "from": "Brayden", "to": "Bubul", "amount": 444 }
+          ]
+        },
+        {
+          "title": "SD side \u2014 everyone pays Clayton",
+          "hub": "Clayton",
+          "tx": [
+            { "from": "Sandro", "to": "Clayton", "amount": 1361.66 },
+            { "from": "Ethan", "to": "Clayton", "amount": 211.92 },
+            { "from": "Jon", "to": "Clayton", "amount": 105 },
+            { "from": "Raynard", "to": "Clayton", "amount": 220 },
+            { "from": "RJ", "to": "Clayton", "amount": 80 },
+            { "from": "Sammy", "to": "Clayton", "amount": 13 },
+            { "from": "Clayton", "to": "Matthew", "amount": 470 },
+            { "from": "Clayton", "to": "Calvin", "amount": 30 },
+            { "from": "Clayton", "to": "Brayden", "amount": 283.38 }
+          ]
+        }
+      ]
+    }
+  ]
+}
