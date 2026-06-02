@@ -25,8 +25,7 @@
     "MkDWPpf-PK": "Winston"
   },
   "ledgers": [
-    { "file": "2026-06-01.csv", "label": "Monday, Jun 1", "date": "2026-06-01" },
-    { "file": "2026-05-31.csv", "label": "Sunday, May 31", "date": "2026-05-31", "week": "2026-W23" }
+    { "file": "2026-06-01.csv", "label": "Monday, Jun 1", "date": "2026-06-01" }
   ],
   "settlements": [
     {
