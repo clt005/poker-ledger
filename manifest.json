@@ -22,10 +22,22 @@
     "-534c8ICbF": "Brayden",
     "DYXLwRPWuA": "Bubul",
     "K85f7jjyu5": "Marco",
-    "MkDWPpf-PK": "Winston"
+    "MkDWPpf-PK": "Winston",
+    "1CSYPldtGy": "Clayton",
+    "mjMmvlswEG": "Clayton",
+    "jlM9IjEUxk": "Ethan",
+    "lpilta3uwb": "Ethan",
+    "GxLDL7uH6F": "Sandro",
+    "xwU3xqObHe": "Jon",
+    "BkqGg7GmNo": "Jon",
+    "xBYVeVi0nD": "Brayden",
+    "TsuodpioRy": "Reno",
+    "2nIY32oNp2": "Marco"
   },
   "ledgers": [
-    { "file": "2026-06-01.csv", "label": "Monday, Jun 1", "date": "2026-06-01" }
+    { "file": "2026-06-01.csv", "label": "Monday, Jun 1", "date": "2026-06-01" },
+    { "file": "2026-06-02a.csv", "label": "Tuesday, Jun 2 (Game 1)", "date": "2026-06-02" },
+    { "file": "2026-06-02b.csv", "label": "Tuesday, Jun 2 (Game 2)", "date": "2026-06-02" }
   ],
   "settlements": [
     {
