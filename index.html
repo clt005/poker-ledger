@@ -161,7 +161,6 @@ const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-
 let CUR='$';
 let DB={imports:[],players:{},settlements:[],settleHub:null,legacyCsv:'',source:'preview'};
 const LEGACY_HOURS=2;
-let PAID={};
 let activeTab='settle', activeWeek=null, sortKey='net', sortDir=-1;
 
 /* ---------- CSV ---------- */
@@ -252,13 +251,8 @@ function staticRow(from,to,amt){ return `<div class="settle-row"><span class="wh
 const sessionsInWeek=wk=>DB.imports.filter(g=>!g.statsOnly&&weekOf(g)===wk).flatMap(g=>g.sessions);
 function allWeeks(){ const ws=new Set(DB.imports.filter(g=>!g.statsOnly).map(weekOf)); (DB.settlements||[]).forEach(s=>ws.add(s.week)); return [...ws].sort().reverse(); }
 
-/* ---------- paid state (localStorage) ---------- */
-const PKEY='pokerledger:paid';
-function loadPaid(){ try{ const v=localStorage.getItem(PKEY); PAID=v?JSON.parse(v):{}; }catch(e){ PAID={}; } }
-function savePaid(){ try{ localStorage.setItem(PKEY,JSON.stringify(PAID)); }catch(e){} }
-const txId=(wk,t,i)=>wk+'|'+i+'|'+t.from+'>'+t.to+'|'+Math.round(t.amt);
-function paidState(wk,id,def){ if(PAID[wk]&&Object.prototype.hasOwnProperty.call(PAID[wk],id)) return !!PAID[wk][id]; return def; }
-function setPaid(wk,id,val){ (PAID[wk]??={})[id]=val?1:0; savePaid(); }
+
+
 
 /* ---------- loader ---------- */
 function applyMeta(man){ if(man.currency)CUR=man.currency; DB.players=man.players||{}; DB.settlements=man.settlements||[]; DB.settleHub=man.settleHub||null; }
@@ -296,9 +290,8 @@ function render(){
   wireView();
 }
 
-function txRow(id,from,to,amt,paid){
-  return `<div class="settle-row ${paid?'paid':''}">
-    <input type="checkbox" class="chk" data-paid="${id}" ${paid?'checked':''}>
+function txRow(id,from,to,amt){
+  return `<div class="settle-row">
     <span class="who"><span class="from">${esc(from)}</span> <span class="arr">pays</span> <span class="to">${esc(to)}</span></span>
     <span class="amt">${CUR}${money(amt)}</span></div>`;
 }
@@ -349,19 +342,16 @@ function viewSettle(){
     const total=ps.reduce((a,p)=>a+p.net,0), balanced=Math.abs(total)<0.5, open=ps.filter(p=>p.open);
     const hub=DB.settleHub||null;
     const tx=hub?settleHub(ps,hub):settle(ps);
-    tx.forEach((t,i)=>t._id=txId(activeWeek,t,i));
-    const paidCount=tx.filter(t=>paidState(activeWeek,t._id,false)).length;
-    const pct=tx.length?Math.round(paidCount/tx.length*100):0;
-    const copyText=tx.map(t=>`${paidState(activeWeek,t._id,false)?'\u2705':'\u2b1c'} ${t.from} \u2192 ${t.to}: ${CUR}${money(t.amt)}`).join('\n');
+    const copyText=tx.map(t=>`${t.from} \u2192 ${t.to}: ${CUR}${money(t.amt)}`).join('\n');
     let rows;
     if(hub){
       const collect=tx.filter(t=>t.to===hub), payout=tx.filter(t=>t.from===hub);
       rows=`<div style="font-weight:600;color:var(--gold);font-size:13.5px;margin-bottom:8px">Everyone pays ${esc(hub)}</div>`
-        +collect.map(t=>txRow(t._id,t.from,t.to,t.amt,paidState(activeWeek,t._id,false))).join('')
+        +collect.map(t=>txRow('',t.from,t.to,t.amt)).join('')
         +(payout.length?`<div class="hint" style="margin:12px 0 6px">then ${esc(hub)} pays out</div>`:'')
-        +payout.map(t=>txRow(t._id,t.from,t.to,t.amt,paidState(activeWeek,t._id,false))).join('');
+        +payout.map(t=>txRow('',t.from,t.to,t.amt)).join('');
     } else {
-      rows=tx.map(t=>txRow(t._id,t.from,t.to,t.amt,paidState(activeWeek,t._id,false))).join('');
+      rows=tx.map(t=>txRow('',t.from,t.to,t.amt)).join('');
     }
     html+=`<div class="card">
       <h2>Who pays <span class="it">who</span></h2>
@@ -374,13 +364,9 @@ function viewSettle(){
         </div></div>
       </div>`:''}
       ${tx.length?`
-        <div class="prog"><i style="width:${pct}%"></i></div>
-        <div class="hint" style="margin:0 0 14px">${paidCount} of ${tx.length} payments done</div>
         ${rows}
         <div class="row" style="margin-top:18px">
-          <button class="btn" id="copyBtn">Copy status for group chat</button>
-          <button class="btn ghost sm" id="allPaid">Mark all paid</button>
-          <button class="btn ghost sm" id="resetPaid">Reset</button>
+          <button class="btn ghost" id="copyBtn">Copy for group chat</button>
         </div>
         <textarea id="copySrc" style="position:absolute;left:-9999px">${copyText}</textarea>
       `:'<div class="hint">Everyone broke even \u2014 nothing to settle.</div>'}
@@ -581,9 +567,6 @@ function download(name,text){ const b=new Blob([text],{type:'text/csv'}); const 
 function copyNode(node){ const r=document.createRange();r.selectNode(node);const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');}catch(e){}s.removeAllRanges(); }
 
 function wireView(){
-  document.querySelectorAll('[data-paid]').forEach(c=>c.addEventListener('change',()=>{ setPaid(activeWeek,c.dataset.paid,c.checked); render(); }));
-  $('#allPaid')?.addEventListener('click',()=>{ computeTx(activeWeek).forEach((t,i)=>setPaid(activeWeek,txId(activeWeek,t,i),true)); render(); toast('All marked paid'); });
-  $('#resetPaid')?.addEventListener('click',()=>{ delete PAID[activeWeek]; savePaid(); render(); toast('Reset'); });
   $('#copyBtn')?.addEventListener('click',()=>{ const t=$('#copySrc'); t.select(); try{document.execCommand('copy');}catch(e){} toast('Copied \u2014 paste it in the chat'); });
   document.querySelectorAll('[data-copyrec]').forEach(b=>b.addEventListener('click',()=>{ const t=$('#recsrc-'+b.dataset.copyrec); t.select(); try{document.execCommand('copy');}catch(e){} toast('Settlement copied'); }));
   document.querySelectorAll('th.sortable').forEach(h=>h.addEventListener('click',()=>{ const k=h.dataset.k; if(sortKey===k)sortDir*=-1; else{sortKey=k;sortDir=k==='name'?1:-1;} render(); }));
@@ -615,7 +598,6 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{ ac
 $('#weekSel').addEventListener('change',e=>{ activeWeek=e.target.value; render(); });
 let toastT; function toast(m){ const el=$('#toast');el.textContent=m;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2400); }
 
-loadPaid();
 load().then(render);
 </script>
 </body>
