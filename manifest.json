@@ -27,17 +27,30 @@
     "mjMmvlswEG": "Clayton",
     "jlM9IjEUxk": "Ethan",
     "lpilta3uwb": "Ethan",
+    "lsEFuPWzHP": "Ethan",
+    "3bL6tP_pVS": "Ethan",
+    "n78wiXbFsc": "Ethan",
     "GxLDL7uH6F": "Sandro",
     "xwU3xqObHe": "Jon",
     "BkqGg7GmNo": "Jon",
     "xBYVeVi0nD": "Brayden",
     "TsuodpioRy": "Reno",
-    "2nIY32oNp2": "Marco"
+    "lNvrOALvFL": "Reno",
+    "2nIY32oNp2": "Marco",
+    "3eHzuywbqn": "Marco",
+    "pu1rRysXuq": "Winston",
+    "9IBcCx4SYH": "Darren",
+    "BiDyfmQh6G": "Darren",
+    "fERFAe1ssD": "Frey",
+    "BvIJo5fWyu": "Peng",
+    "DhPARuRZq5": "daddy*"
   },
   "ledgers": [
     { "file": "2026-06-01.csv", "label": "Monday, Jun 1", "date": "2026-06-01" },
     { "file": "2026-06-02a.csv", "label": "Tuesday, Jun 2 (Game 1)", "date": "2026-06-02" },
-    { "file": "2026-06-02b.csv", "label": "Tuesday, Jun 2 (Game 2)", "date": "2026-06-02" }
+    { "file": "2026-06-02b.csv", "label": "Tuesday, Jun 2 (Game 2)", "date": "2026-06-02" },
+    { "file": "2026-06-03.csv", "label": "Wednesday, Jun 3", "date": "2026-06-03" },
+    { "file": "2026-06-04.csv", "label": "Thursday, Jun 4", "date": "2026-06-04" }
   ],
   "settlements": [
     {
